@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<documentation>
+    <!-- Аннотации -->
+    <annotation name="Invoke">
+        <description>Аннотация для пометки методов, которые должны вызываться автоматически</description>
+        <retention>RUNTIME</retention>
+        <target>METHOD</target>
+    </annotation>
+
+    <annotation name="Default">
+        <description>Аннотация для указания класса по умолчанию</description>
+        <retention>RUNTIME</retention>
+        <target>TYPE, FIELD</target>
+        <parameters>
+            <parameter name="defaultClass" type="Class">Класс по умолчанию</parameter>
+        </parameters>
+    </annotation>
+
+    <annotation name="ToString">
+        <description>Аннотация для управления отображением полей в строковом представлении</description>
+        <retention>RUNTIME</retention>
+        <target>TYPE, FIELD</target>
+        <parameters>
+            <parameter name="show" type="ShowField" default="YES">Определяет, показывать ли поле/класс</parameter>
+        </parameters>
+        <enum name="ShowField">
+            <value>YES - показывать поле</value>
+            <value>NO - скрывать поле</value>
+        </enum>
+    </annotation>
+
+    <annotation name="Validate">
+        <description>Аннотация для указания списка классов для валидации</description>
+        <retention>RUNTIME</retention>
+        <target>TYPE, ANNOTATION_TYPE</target>
+        <parameters>
+            <parameter name="validatedClasses" type="Class[]">Массив классов для валидации</parameter>
+        </parameters>
+    </annotation>
+
+    <annotation name="Two">
+        <description>Аннотация с двумя параметрами: текстовым и числовым</description>
+        <retention>RUNTIME</retention>
+        <target>TYPE</target>
+        <parameters>
+            <parameter name="textData" type="String">Текстовые данные</parameter>
+            <parameter name="numberData" type="int">Числовые данные</parameter>
+        </parameters>
+    </annotation>
+
+    <annotation name="Cache">
+        <description>Аннотация для конфигурации кеширования</description>
+        <retention>RUNTIME</retention>
+        <target>TYPE</target>
+        <parameters>
+            <parameter name="cacheNames" type="String[]" default="{}">Список имен областей кеширования</parameter>
+        </parameters>
+    </annotation>
+
+    <!-- Основные классы -->
+    <class name="MethodInvoker">
+        <description>Класс для демонстрации работы аннотации @Invoke</description>
+        <fields>
+            <field name="callCount" type="int" access="private">Счетчик вызовов методов</field>
+        </fields>
+        <methods>
+            <method name="executeAutomatically" return="void" access="public">
+                <description>Метод, автоматически вызываемый через аннотацию @Invoke</description>
+                <annotation>@Invoke</annotation>
+            </method>
+            <method name="regularMethod" return="void" access="public">
+                <description>Обычный метод без аннотации</description>
+            </method>
+            <method name="anotherAutoMethod" return="void" access="public">
+                <description>Еще один автоматически вызываемый метод</description>
+                <annotation>@Invoke</annotation>
+            </method>
+            <method name="getCallCount" return="int" access="public">
+                <description>Получить количество вызовов</description>
+            </method>
+        </methods>
+    </class>
+
+    <class name="DefaultTypeClass">
+        <description>Класс для демонстрации аннотации @Default на уровне класса</description>
+        <annotation>@Default(defaultClass = Integer.class)</annotation>
+        <fields>
+            <field name="sampleField" type="Object" access="private">
+                <description>Поле с аннотацией @Default</description>
+                <annotation>@Default(defaultClass = String.class)</annotation>
+            </field>
+        </fields>
+    </class>
+
+    <class name="UserProfile">
+        <description>Класс пользователя для демонстрации аннотации @ToString</description>
+        <annotation>@ToString</annotation>
+        <fields>
+            <field name="username" type="String" access="private">Имя пользователя</field>
+            <field name="password" type="String" access="private">
+                <description>Пароль (скрыт в строковом представлении)</description>
+                <annotation>@ToString(show = ToString.ShowField.NO)</annotation>
+            </field>
+            <field name="loginCount" type="int" access="private">Количество входов</field>
+            <field name="sessionId" type="String" access="private">
+                <description>ID сессии (скрыт в строковом представлении)</description>
+                <annotation>@ToString(show = ToString.ShowField.NO)</annotation>
+            </field>
+        </fields>
+        <constructors>
+            <constructor access="public">Конструктор по умолчанию</constructor>
+            <constructor access="public" parameters="String, String, int, String">
+                Параметризованный конструктор
+            </constructor>
+        </constructors>
+        <methods>
+            <method name="getUsername" return="String" access="public">Геттер для имени пользователя</method>
+            <method name="getPassword" return="String" access="public">Геттер для пароля</method>
+            <method name="getLoginCount" return="int" access="public">Геттер для счетчика входов</method>
+            <method name="getSessionId" return="String" access="public">Геттер для ID сессии</method>
+        </methods>
+    </class>
+
+    <class name="ValidationContainer">
+        <description>Контейнер для демонстрации аннотации @Validate</description>
+        <annotation>@Validate(validatedClasses = {Double.class, Boolean.class, Float.class})</annotation>
+    </class>
+
+    <class name="DoubleValueClass">
+        <description>Класс для демонстрации аннотации @Two</description>
+        <annotation>@Two(textData = "Тестовые данные", numberData = 100)</annotation>
+    </class>
+
+    <class name="CacheStorage">
+        <description>Класс для демонстрации аннотации @Cache</description>
+        <annotation>@Cache(cacheNames = {"session", "preferences", "settings"})</annotation>
+    </class>
+
+    <!-- Обработчики аннотаций -->
+    <class name="InvokeHandler">
+        <description>Обработчик для выполнения методов с аннотацией @Invoke</description>
+        <methods>
+            <method name="executeAnnotatedMethods" return="void" access="public static">
+                <description>Выполняет все методы с аннотацией @Invoke в целевом объекте</description>
+                <parameters>
+                    <parameter name="target" type="Object">Объект, методы которого нужно выполнить</parameter>
+                </parameters>
+            </method>
+        </methods>
+    </class>
+
+    <class name="DefaultHandler">
+        <description>Обработчик для работы с аннотацией @Default</description>
+        <methods>
+            <method name="showDefaultClass" return="void" access="public static">
+                <description>Показывает класс по умолчанию из аннотации @Default</description>
+                <parameters>
+                    <parameter name="clazz" type="Class">Класс для анализа</parameter>
+                </parameters>
+            </method>
+        </methods>
+    </class>
+
+    <class name="ToStringHandler">
+        <description>Обработчик для построения строкового представления объектов с использованием @ToString</description>
+        <methods>
+            <method name="buildCustomString" return="String" access="public static">
+                <description>Строит кастомное строковое представление объекта с учетом аннотаций @ToString</description>
+                <parameters>
+                    <parameter name="obj" type="Object">Объект для преобразования в строку</parameter>
+                </parameters>
+            </method>
+        </methods>
+    </class>
+
+    <class name="ValidateHandler">
+        <description>Обработчик для работы с аннотацией @Validate</description>
+        <methods>
+            <method name="displayValidatedClasses" return="void" access="public static">
+                <description>Отображает список классов для валидации из аннотации @Validate</description>
+                <parameters>
+                    <parameter name="clazz" type="Class">Класс для анализа</parameter>
+                </parameters>
+            </method>
+        </methods>
+    </class>
+
+    <class name="TwoHandler">
+        <description>Обработчик для работы с аннотацией @Two</description>
+        <methods>
+            <method name="processTwoAnnotation" return="void" access="public static">
+                <description>Обрабатывает аннотацию @Two и выводит её параметры</description>
+                <parameters>
+                    <parameter name="clazz" type="Class">Класс для анализа</parameter>
+                </parameters>
+            </method>
+        </methods>
+    </class>
+
+    <class name="CacheHandler">
+        <description>Обработчик для работы с аннотацией @Cache</description>
+        <methods>
+            <method name="analyzeCacheConfiguration" return="void" access="public static">
+                <description>Анализирует конфигурацию кеширования из аннотации @Cache</description>
+                <parameters>
+                    <parameter name="clazz" type="Class">Класс для анализа</parameter>
+                </parameters>
+            </method>
+        </methods>
+    </class>
+
+    <!-- Главные и тестовые классы -->
+    <class name="Main">
+        <description>Главный класс приложения для тестирования всех аннотаций</description>
+        <methods>
+            <method name="main" return="void" access="public static">
+                <description>Точка входа в приложение</description>
+                <parameters>
+                    <parameter name="args" type="String[]">Аргументы командной строки</parameter>
+                </parameters>
+            </method>
+        </methods>
+    </class>
+
+    <class name="AnnotationTests">
+        <description>Класс с unit-тестами для аннотаций</description>
+        <methods>
+            <method name="main" return="void" access="public static">
+                <description>Точка входа для запуска тестов</description>
+                <parameters>
+                    <parameter name="args" type="String[]">Аргументы командной строки</parameter>
+                </parameters>
+            </method>
+            <method name="testInvokeAnnotation" return="void" access="static">
+                <description>Тестирует работу аннотации @Invoke</description>
+            </method>
+            <method name="testDefaultAnnotation" return="void" access="static">
+                <description>Тестирует работу аннотации @Default</description>
+            </method>
+        </methods>
+    </class>
+</documentation>
