@@ -1,0 +1,1 @@
+# LAB6_LatyntsevaIT-8
